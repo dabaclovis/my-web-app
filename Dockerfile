@@ -25,9 +25,9 @@ RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl \
      && docker-php-ext-install gd
 
 RUN curl -sS https://getcomposer.org/installer | php --  --install-dir=/usr/local/bin --filename=composer
+RUN composer install
 
 COPY . /var/www/html/
-RUN composer install
 
 CMD ["php","artisan","serve","--host=0.0.0.0"]
 

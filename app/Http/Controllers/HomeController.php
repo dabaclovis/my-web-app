@@ -28,7 +28,7 @@ class HomeController extends Controller
         return view('users.home',[
             $user_id = Auth::user()->id,
             $user = User::find($user_id),
-            "articles" => $user->articles,
+            "blogs" => $user->articles,
         ]);
     }
 

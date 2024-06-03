@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class UsersArticlesController extends Controller
 {
@@ -62,7 +63,9 @@ class UsersArticlesController extends Controller
      */
     public function show(Article $article)
     {
-        return view('usarticles.show');
+        return view('usarticles.show',[
+            'article' => $article,
+         ]);
     }
 
     /**
@@ -70,7 +73,9 @@ class UsersArticlesController extends Controller
      */
     public function edit(Article $article)
     {
-        return view('usarticles.edit');
+        return view('usarticles.edit',[
+            'article' => $article,
+         ]);
     }
 
     /**
@@ -78,7 +83,32 @@ class UsersArticlesController extends Controller
      */
     public function update(Request $request, Article $article)
     {
-        //
+        $this->validate($request,[
+            'title' => ['required','string','max:200'],
+            'body' => ['required','string','max:4500'],
+            'image' => ['max:2048']
+        ],[
+            'title' => "Heading is required",
+            'body' => "Content field is required",
+        ]);
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            if (File::exists('storage/images/'.$article->image)) {
+                File::delete('storage/images/'.$article->image);
+            }
+            $filename = $file->hashName();
+            $path = $request->file('image')->storeAs('images',$filename,'public');
+        }else{
+            $filename = "noimage";
+        }
+        $article->update([
+            'title' => Str::lower($request->input('title')),
+            'body' => Str::lower($request->input('body')),
+            'image' => $filename,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return redirect()->route('home');
     }
 
     /**
@@ -86,6 +116,11 @@ class UsersArticlesController extends Controller
      */
     public function destroy(Article $article)
     {
-        //
+        if (Auth::user()->id === $article->user_id) {
+            $article->delete();
+        } else {
+            return back();
+        }
+
     }
 }
